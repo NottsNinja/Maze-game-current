@@ -1,0 +1,322 @@
+import pygame, random, os, sys, time
+
+# Define variables
+
+WIDTH = 750
+HEIGHT = 440
+FPS = 40
+VEL = 2
+
+SPRITE_IMAGE = pygame.image.load(os.path.join('Assets', 'sprite.png'))
+SPRITE = pygame.transform.scale(SPRITE_IMAGE, (16, 16))
+
+menu_background_image = pygame.image.load(os.path.join('Assets', 'menu_background.png'))
+menu_background = pygame.transform.scale(menu_background_image, (WIDTH, HEIGHT))
+
+play_rect_image = pygame.image.load(os.path.join('Assets', 'play_rect.png'))
+play_rect = pygame.transform.scale(play_rect_image, (200, 80))
+
+options_rect_image = pygame.image.load(os.path.join('Assets', 'options_rect.png'))
+options_rect = pygame.transform.scale(options_rect_image, (275, 80))
+
+hide_timer_rect = pygame.transform.scale(options_rect, (227, 58))
+
+back_rect = pygame.transform.scale(play_rect_image, (100, 40))
+
+# Define colours
+
+BLACK = (0, 0, 0)
+BLUE = (40, 40, 255)
+back_color = (40, 40, 255)
+LIGHTBLUE = (150, 240, 240)
+YELLOW = (182, 143, 64)
+play_color = (182, 143, 64)
+options_color = (182, 143, 64)
+hide_color = (182, 143, 64)
+
+
+# initalise pygame
+
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Maze Game")
+clock = pygame.time.Clock()
+
+#initalise fonts
+
+pygame.font.init()
+timer_font = pygame.font.SysFont('comicsans', 30)
+menu_font = pygame.font.SysFont('comicsans', 40)
+play_font = pygame.font.SysFont('comicsans', 50)
+bold_font = pygame.font.SysFont('comicsans', 50)
+
+# setup variables for maze
+
+x = 0                    # x axis
+y = 0                    # y axis
+w = 20                   # width of cell
+grid = []
+visited = []
+stack = []
+solution = {}
+
+maze = pygame.Surface(screen.get_size())
+maze.fill(LIGHTBLUE)
+
+player = pygame.draw.rect(maze, BLACK, pygame.Rect(405, 405, 16, 16))
+
+def play(x, y, w):
+
+    # build the grid
+
+    for i in range(1,21):
+        x = 20                                                            # set x coordinate to start position
+        y = y + 20                                                        # start a new row
+        for j in range(1, 21):
+            maze_top = pygame.draw.rect(maze, BLACK, pygame.Rect(x, y, 20, 1))           # top of cell
+            maze_right = pygame.draw.rect(maze, BLACK, pygame.Rect(x + w, y, 1, 20))       # right of cell
+            maze_bottom = pygame.draw.rect(maze, BLACK, pygame.Rect(x + w, y + w, 20, 1))   # bottom of cell
+            maze_left = pygame.draw.rect(maze, BLACK, pygame.Rect(x, y + w, 1, 20))       # left of cell
+            grid.append((x,y))                                            # add cell to grid list
+            x = x + 20                                                    # move cell to new position
+
+
+    square1 = pygame.draw.rect(maze, BLUE, (x + 1, y - w + 1, 19, 39), 0)         # draw a rectangle twice the width of the cell to animate the wall being removed
+
+    square2 = pygame.draw.rect(maze, BLUE, (x +  1, y + 1, 19, 39), 0)
+
+    square3 = pygame.draw.rect(maze, BLUE, (x - w +1, y +1, 39, 19), 0)
+
+    square4 = pygame.draw.rect(maze, BLUE, (x +1, y +1, 39, 19), 0)
+
+    stack.append((x,y))                                             # place starting cell into stack
+    visited.append((x,y))                                           # add starting cell to visited list
+    while len(stack) > 0:                                           # loop until stack is empty
+        cell = []                                                   # define cell list
+        if (x + w, y) not in visited and (x + w, y) in grid:        # right cell available?
+            cell.append("right")                                    # if yes add to cell list
+
+        if (x - w, y) not in visited and (x - w, y) in grid:        # left cell available?
+            cell.append("left")
+
+        if (x , y + w) not in visited and (x , y + w) in grid:      # down cell available?
+            cell.append("down")
+
+        if (x, y - w) not in visited and (x , y - w) in grid:       # up cell available?
+            cell.append("up")
+
+        if len(cell) > 0:                                           # check to see if cell list is empty
+            cell_chosen = (random.choice(cell))                     # select one of the cell randomly
+
+            if cell_chosen == "right":                              # if this cell has been chosen
+                square4 = pygame.draw.rect(maze, BLUE, (x +1, y +1, 39, 19), 0)
+                pygame.display.update()
+                solution[(x + w, y)] = x, y                         # solution = dictionary key = new cell, other = current cell
+                x = x + w                                           # make this cell the current cell
+                visited.append((x, y))                              # add to visited list
+                stack.append((x, y))                                # place current cell on to stack
+
+            elif cell_chosen == "left":
+                square3 = pygame.draw.rect(maze, BLUE, (x - w +1, y +1, 39, 19), 0)
+                pygame.display.update()
+                solution[(x - w, y)] = x, y
+                x = x - w
+                visited.append((x, y))
+                stack.append((x, y))
+
+            elif cell_chosen == "down":
+                square2 = pygame.draw.rect(maze, BLUE, (x +  1, y + 1, 19, 39), 0)
+                pygame.display.update()
+                solution[(x , y + w)] = x, y
+                y = y + w
+                visited.append((x, y))
+                stack.append((x, y))
+
+            elif cell_chosen == "up":
+                square1 = pygame.draw.rect(maze, BLUE, (x + 1, y - w + 1, 19, 39), 0)         # draw a rectangle twice the width of the cell
+                pygame.display.update()
+                solution[(x , y - w)] = x, y
+                y = y - w
+                visited.append((x, y))
+                stack.append((x, y))
+        else:
+            x, y = stack.pop()                          # if no cells are available pop one from the stack
+
+
+
+    # patch maze walls
+    pygame.draw.rect(maze, LIGHTBLUE, pygame.Rect(421, 21, 20, 400))
+    pygame.draw.rect(maze, LIGHTBLUE, pygame.Rect(20, 421, 400, 20))
+    pygame.draw.rect(maze, BLACK, pygame.Rect(20, 420, 20, 1))
+    pygame.draw.rect(maze, LIGHTBLUE, pygame.Rect(421, 400, 40, 40))
+
+    running = True
+    while running:          #main game loop
+        
+        clock.tick(FPS)
+
+        pygame.display.set_caption("Maze Game")
+        back_color = (40, 40, 255)
+        
+        play_mouse_x, play_mouse_y = pygame.mouse.get_pos()
+
+        keys_pressed = pygame.key.get_pressed()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if 630 <= play_mouse_x <= 730 and 388 <= play_mouse_y <= 428:
+                    pygame.quit()
+                    sys.exit()
+
+        if 630 <= play_mouse_x <= 730 and 388 <= play_mouse_y <= 428:
+            back_color = (80, 80, 255)
+
+        else:
+            back_color = (40, 40, 255)
+
+        
+        if keys_pressed[pygame.K_a] and player.x - VEL > 18: #left
+            player.x = player.x - VEL
+        if keys_pressed[pygame.K_d] and player.x + VEL < 405: #right
+            player.x = player.x + VEL
+        if keys_pressed[pygame.K_w] and player.y - VEL > 18: #up
+            player.y = player.y - VEL
+        if keys_pressed[pygame.K_s] and player.y + VEL < 405: #down
+            player.y = player.y + VEL
+
+        if keys_pressed[pygame.K_r]:    #restart
+            player.x = 405
+            player.y = 405
+
+        winner_text = menu_font.render("You Win!", 1, BLACK)
+        back_text = timer_font.render("EXIT", 1, back_color)
+
+        if player.x <= 21 and player.y <= 21:
+            maze.blit(winner_text, [500, 40])
+            pygame.display.update()
+
+        if player.x <= 20 and player.y <= 20:
+            time.sleep(2.75)
+            pygame.quit()
+            sys.exit()
+
+        current_time_raw = pygame.time.get_ticks() / 1000       #create timer
+        current_time = int(current_time_raw)
+
+        draw_timer = timer_font.render("Time: " + str(current_time), 1, BLACK)
+
+        screen.blit(maze,(0, 0))
+        screen.blit(draw_timer, [518, 115])
+        screen.blit(SPRITE, (player.x, player.y))
+        screen.blit(back_rect, (631, 389))
+        screen.blit(back_text, [641, 386])
+
+        pygame.display.update()
+
+def options():
+
+    pygame.display.set_caption("Options")
+    options_color = (182, 143, 64)
+    hide_color = (182, 143, 64)
+
+    running = True
+    while running:
+
+        screen.blit(menu_background, (0, 0))
+
+        options_mouse_x, options_mouse_y = pygame.mouse.get_pos()
+
+        options_title = play_font.render("Options", 1, YELLOW)
+        screen.blit(options_title, [282, 40])
+
+        options_exit = timer_font.render("EXIT", 1, options_color)
+        screen.blit(back_rect, (631, 389))
+        screen.blit(options_exit, [641, 388])
+
+        hide_timer = menu_font.render("Hide Timer", 1, hide_color)
+        screen.blit(hide_timer_rect, (258, 156))
+        screen.blit(hide_timer, [267, 155])
+
+        keys_pressed = pygame.key.get_pressed()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if 630 <= options_mouse_x <= 730 and 390 <= options_mouse_y <= 430:
+                    running = False
+                if 257 <= options_mouse_x <= 486 and 154 <= options_mouse_y <= 214:
+                    pygame.draw.rect(maze, YELLOW, pygame.Rect(485, 115, 150, 50))
+                    pygame.display.update()
+
+        if 630 <= options_mouse_x <= 730 and 390 <= options_mouse_y <= 430:
+            options_color = (220, 185, 115)
+
+        else:
+            options_color = (182, 143, 64)
+
+        if 257 <= options_mouse_x <= 486 and 154 <= options_mouse_y <= 214:
+            hide_color = (220, 185, 115)
+
+        else:
+            hide_color = (182, 143, 64)
+
+
+        pygame.display.update()
+
+        print(options_mouse_x, options_mouse_y)
+
+def main_menu():
+
+    pygame.display.set_caption("Main Menu")
+    play_color = (182,143,64)
+    options_color = (182, 143, 64)
+
+    while True:
+
+        screen.blit(menu_background, (0, 0))
+
+        menu_mouse_x, menu_mouse_y = pygame.mouse.get_pos()
+
+        menu_text = bold_font.render("Main Menu", 1, YELLOW)
+        screen.blit(menu_text, [252, 50])
+
+        play_text = play_font.render("PLAY", 1, play_color)
+        screen.blit(play_rect, (273, 175))
+        screen.blit(play_text, [312, 178])
+
+        options_text = play_font.render("OPTIONS", 1, options_color)
+        screen.blit(options_rect, (235, 285))
+        screen.blit(options_text, [250, 288])        
+
+        keys_pressed = pygame.key.get_pressed()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if 275 <= menu_mouse_x <= 475 and 175 <= menu_mouse_y <= 255:
+                    play(x, y, w)
+                if 230 <= menu_mouse_x <= 510 and 280 <= menu_mouse_y <= 370:
+                    options()
+
+        if 275 <= menu_mouse_x <= 475 and 175 <= menu_mouse_y <= 255:   #play button lights up
+            play_color = (220, 185, 115)
+
+        else:
+            play_color = (182, 143, 64)
+
+        if 230 <= menu_mouse_x <= 510 and 280 <= menu_mouse_y <= 370:   #options button lights up
+            options_color = (220, 185, 115)
+
+        else:
+            options_color = (182, 143, 64)
+            
+        pygame.display.update()
+
+main_menu()
