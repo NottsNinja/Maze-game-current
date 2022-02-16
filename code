@@ -5,10 +5,10 @@ import pygame, random, os, sys, time
 WIDTH = 750
 HEIGHT = 440
 FPS = 40
-VEL = 2
+VEL = 1
 
 SPRITE_IMAGE = pygame.image.load(os.path.join('Assets', 'sprite.png'))
-SPRITE = pygame.transform.scale(SPRITE_IMAGE, (16, 16))
+SPRITE = pygame.transform.scale(SPRITE_IMAGE, (15, 15))
 
 menu_background_image = pygame.image.load(os.path.join('Assets', 'menu_background.png'))
 menu_background = pygame.transform.scale(menu_background_image, (WIDTH, HEIGHT))
@@ -63,7 +63,7 @@ solution = {}
 maze = pygame.Surface(screen.get_size())
 maze.fill(LIGHTBLUE)
 
-player = pygame.draw.rect(maze, BLACK, pygame.Rect(405, 405, 16, 16))
+player = pygame.draw.rect(maze, BLACK, pygame.Rect(405, 405, 15, 15))
 
 def play(x, y, w):
 
@@ -210,6 +210,11 @@ def play(x, y, w):
 
         screen.blit(maze,(0, 0))
         screen.blit(draw_timer, [518, 115])
+        
+        timer_hidden = False
+        if timer_hidden == True:
+            pygame.draw.rect(maze, YELLOW, pygame.Rect(485, 115, 150, 50))
+            
         screen.blit(SPRITE, (player.x, player.y))
         screen.blit(back_rect, (631, 389))
         screen.blit(back_text, [641, 386])
@@ -250,8 +255,7 @@ def options():
                 if 630 <= options_mouse_x <= 730 and 390 <= options_mouse_y <= 430:
                     running = False
                 if 257 <= options_mouse_x <= 486 and 154 <= options_mouse_y <= 214:
-                    pygame.draw.rect(maze, YELLOW, pygame.Rect(485, 115, 150, 50))
-                    pygame.display.update()
+                    timer_hidden = True
 
         if 630 <= options_mouse_x <= 730 and 390 <= options_mouse_y <= 430:
             options_color = (220, 185, 115)
