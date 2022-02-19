@@ -2,22 +2,22 @@ import pygame, random, os, sys, time
 
 # Define variables
 
-WIDTH = 750
+WIDTH = 750  # dimensions of the pygame window
 HEIGHT = 440
-FPS = 40
-VEL = 1
+FPS = 40  # frames per second for the pygame window
+VEL = 1  # velocity of the player
 
 SPRITE_IMAGE = pygame.image.load(os.path.join('Assets', 'sprite.png'))
-SPRITE = pygame.transform.scale(SPRITE_IMAGE, (15, 15))
+SPRITE = pygame.transform.scale(SPRITE_IMAGE, (16, 16))                     # load image for the player sprite
 
 menu_background_image = pygame.image.load(os.path.join('Assets', 'menu_background.png'))
-menu_background = pygame.transform.scale(menu_background_image, (WIDTH, HEIGHT))
+menu_background = pygame.transform.scale(menu_background_image, (WIDTH, HEIGHT))            # load image for the menu backgrounds
 
 play_rect_image = pygame.image.load(os.path.join('Assets', 'play_rect.png'))
 play_rect = pygame.transform.scale(play_rect_image, (200, 80))
 
 options_rect_image = pygame.image.load(os.path.join('Assets', 'options_rect.png'))
-options_rect = pygame.transform.scale(options_rect_image, (275, 80))
+options_rect = pygame.transform.scale(options_rect_image, (275, 80))                    # load the different menu button rectangles
 
 hide_timer_rect = pygame.transform.scale(options_rect, (227, 58))
 
@@ -39,14 +39,14 @@ hide_color = (182, 143, 64)
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Maze Game")
+pygame.display.set_caption("Maze Game")  # sets the caption of the pygame window
 clock = pygame.time.Clock()
 
-#initalise fonts
+# initalise fonts
 
 pygame.font.init()
 timer_font = pygame.font.SysFont('comicsans', 30)
-menu_font = pygame.font.SysFont('comicsans', 40)
+menu_font = pygame.font.SysFont('comicsans', 40)    # put different size fonts into suitably named variables
 play_font = pygame.font.SysFont('comicsans', 50)
 bold_font = pygame.font.SysFont('comicsans', 50)
 
@@ -61,9 +61,9 @@ stack = []
 solution = {}
 
 maze = pygame.Surface(screen.get_size())
-maze.fill(LIGHTBLUE)
+maze.fill(LIGHTBLUE)    # sets the colour of the play() background
 
-player = pygame.draw.rect(maze, BLACK, pygame.Rect(405, 405, 15, 15))
+player = pygame.draw.rect(maze, BLACK, pygame.Rect(405, 405, 16, 16))   # a rectangle to control the players movements
 
 def play(x, y, w):
 
@@ -151,20 +151,20 @@ def play(x, y, w):
     pygame.draw.rect(maze, LIGHTBLUE, pygame.Rect(421, 400, 40, 40))
 
     running = True
-    while running:          #main game loop
+    while running:          # simple while loop
         
         clock.tick(FPS)
 
-        pygame.display.set_caption("Maze Game")
+        pygame.display.set_caption("Maze Game") # changes caption for different interface
         back_color = (40, 40, 255)
         
-        play_mouse_x, play_mouse_y = pygame.mouse.get_pos()
+        play_mouse_x, play_mouse_y = pygame.mouse.get_pos() # stores the mouses x and y coords of the play screen in simple variables
 
         keys_pressed = pygame.key.get_pressed()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
+                pygame.quit()                   # detects keyboard and mouse inputs
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if 630 <= play_mouse_x <= 730 and 388 <= play_mouse_y <= 428:
@@ -174,25 +174,27 @@ def play(x, y, w):
         if 630 <= play_mouse_x <= 730 and 388 <= play_mouse_y <= 428:
             back_color = (80, 80, 255)
 
-        else:
+        else:                               # changes the colour of back button when hovered over
             back_color = (40, 40, 255)
 
-        
-        if keys_pressed[pygame.K_a] and player.x - VEL > 18: #left
+
+        # controls the movement of the player
+
+        if keys_pressed[pygame.K_a] and player.x - VEL > 18: # left
             player.x = player.x - VEL
-        if keys_pressed[pygame.K_d] and player.x + VEL < 405: #right
+        if keys_pressed[pygame.K_d] and player.x + VEL < 405: # right
             player.x = player.x + VEL
-        if keys_pressed[pygame.K_w] and player.y - VEL > 18: #up
+        if keys_pressed[pygame.K_w] and player.y - VEL > 18: # up
             player.y = player.y - VEL
-        if keys_pressed[pygame.K_s] and player.y + VEL < 405: #down
+        if keys_pressed[pygame.K_s] and player.y + VEL < 405: # down
             player.y = player.y + VEL
 
-        if keys_pressed[pygame.K_r]:    #restart
+        if keys_pressed[pygame.K_r]:    # restart the maze
             player.x = 405
             player.y = 405
 
-        winner_text = menu_font.render("You Win!", 1, BLACK)
-        back_text = timer_font.render("EXIT", 1, back_color)
+        winner_text = menu_font.render("You Win!", 1, BLACK)    # draw text for when the player wins
+        back_text = timer_font.render("EXIT", 1, back_color)    # draw text for the back button
 
         if player.x <= 21 and player.y <= 21:
             maze.blit(winner_text, [500, 40])
@@ -203,15 +205,17 @@ def play(x, y, w):
             pygame.quit()
             sys.exit()
 
-        current_time_raw = pygame.time.get_ticks() / 1000       #create timer
-        current_time = int(current_time_raw)
+        current_time = int(pygame.time.get_ticks() / 1000)       # initiate on screen timer
 
-        draw_timer = timer_font.render("Time: " + str(current_time), 1, BLACK)
+        if running != True:
+            current_time = int(0)
+
+        draw_timer = timer_font.render("Time: " + str(current_time), 1, BLACK) # draw the timer
 
         screen.blit(maze,(0, 0))
         screen.blit(draw_timer, [518, 115])
         
-        timer_hidden = False
+        timer_hidden = False                    # --- NEEDS WORK ---
         if timer_hidden == True:
             pygame.draw.rect(maze, YELLOW, pygame.Rect(485, 115, 150, 50))
             
@@ -223,23 +227,23 @@ def play(x, y, w):
 
 def options():
 
-    pygame.display.set_caption("Options")
+    pygame.display.set_caption("Options")   # changes caption for different interface
     options_color = (182, 143, 64)
     hide_color = (182, 143, 64)
 
-    running = True
-    while running:
+    running1 = True
+    while running1:
 
         screen.blit(menu_background, (0, 0))
 
-        options_mouse_x, options_mouse_y = pygame.mouse.get_pos()
+        options_mouse_x, options_mouse_y = pygame.mouse.get_pos()   # stores mouse coords for the options screen
 
         options_title = play_font.render("Options", 1, YELLOW)
         screen.blit(options_title, [282, 40])
 
         options_exit = timer_font.render("EXIT", 1, options_color)
         screen.blit(back_rect, (631, 389))
-        screen.blit(options_exit, [641, 388])
+        screen.blit(options_exit, [641, 388])                           # create and draw buttons for options screen
 
         hide_timer = menu_font.render("Hide Timer", 1, hide_color)
         screen.blit(hide_timer_rect, (258, 156))
@@ -249,34 +253,33 @@ def options():
         
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
+                pygame.quit()                   # detects keyboard and mouse inputs
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if 630 <= options_mouse_x <= 730 and 390 <= options_mouse_y <= 430:
-                    running = False
+                    running1 = False
                 if 257 <= options_mouse_x <= 486 and 154 <= options_mouse_y <= 214:
                     timer_hidden = True
 
         if 630 <= options_mouse_x <= 730 and 390 <= options_mouse_y <= 430:
             options_color = (220, 185, 115)
 
-        else:
+        else:                                   # changes colour of options button when hovered over
             options_color = (182, 143, 64)
 
         if 257 <= options_mouse_x <= 486 and 154 <= options_mouse_y <= 214:
             hide_color = (220, 185, 115)
 
-        else:
+        else:                                   # changes colour of hide timer button when hovered over
             hide_color = (182, 143, 64)
 
 
         pygame.display.update()
 
-        print(options_mouse_x, options_mouse_y)
 
 def main_menu():
 
-    pygame.display.set_caption("Main Menu")
+    pygame.display.set_caption("Main Menu")     # changes caption for different interface
     play_color = (182,143,64)
     options_color = (182, 143, 64)
 
@@ -284,7 +287,7 @@ def main_menu():
 
         screen.blit(menu_background, (0, 0))
 
-        menu_mouse_x, menu_mouse_y = pygame.mouse.get_pos()
+        menu_mouse_x, menu_mouse_y = pygame.mouse.get_pos()     # stores mouse coords for menu screen
 
         menu_text = bold_font.render("Main Menu", 1, YELLOW)
         screen.blit(menu_text, [252, 50])
@@ -293,7 +296,7 @@ def main_menu():
         screen.blit(play_rect, (273, 175))
         screen.blit(play_text, [312, 178])
 
-        options_text = play_font.render("OPTIONS", 1, options_color)
+        options_text = play_font.render("OPTIONS", 1, options_color)        # create and draw buttons for menu screen
         screen.blit(options_rect, (235, 285))
         screen.blit(options_text, [250, 288])        
 
@@ -301,7 +304,7 @@ def main_menu():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
+                pygame.quit()                   # detects keyboard and mouse inputs
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if 275 <= menu_mouse_x <= 475 and 175 <= menu_mouse_y <= 255:
@@ -309,13 +312,13 @@ def main_menu():
                 if 230 <= menu_mouse_x <= 510 and 280 <= menu_mouse_y <= 370:
                     options()
 
-        if 275 <= menu_mouse_x <= 475 and 175 <= menu_mouse_y <= 255:   #play button lights up
+        if 275 <= menu_mouse_x <= 475 and 175 <= menu_mouse_y <= 255:   #play button lights up when hovered over
             play_color = (220, 185, 115)
 
         else:
             play_color = (182, 143, 64)
 
-        if 230 <= menu_mouse_x <= 510 and 280 <= menu_mouse_y <= 370:   #options button lights up
+        if 230 <= menu_mouse_x <= 510 and 280 <= menu_mouse_y <= 370:   #options button lights up when hovered over
             options_color = (220, 185, 115)
 
         else:
